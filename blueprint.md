@@ -1,72 +1,29 @@
-# Blueprint: Meditation Harmony App
+# Meditation Harmony
 
-## 1. Обзор проекта
+## Overview
 
-**Цель:** Разработка кросс-платформенного мобильного приложения для медитации "Meditation Harmony". Приложение поможет пользователям расслабляться, снижать стресс и улучшать концентрацию с помощью аудиогидов, фоновой музыки и интерактивных упражнений.
+Meditation Harmony is a Flutter application designed to provide a serene and calming experience for users through guided meditations and relaxing music. The app features a simple and intuitive interface, with a focus on beautiful design and ease of use.
 
-**Технологический стек:**
-- **Frontend:** Flutter
-- **Backend:** Node.js (согласно ТЗ)
-- **База данных и Аутентификация:** Firebase
+## Features
 
-## 2. Реализованные стили, дизайны и функции
+*   **Guided Meditations:** A collection of guided meditations for various purposes, such as breathing practices, evening relaxation, and morning focus.
+*   **Music Library:** A library of calming music tracks, including sounds of nature like forests, oceans, and rain.
+*   **Meditation Player:** A dedicated screen for playing meditations and music, with controls for play, pause, and seeking.
+*   **Frosted Glass UI:** A beautiful frosted glass effect for the bottom navigation bar, creating a modern and visually appealing look.
+*   **Custom Theming:** A custom color scheme and typography using Google Fonts to create a consistent and harmonious design.
+*   **Provider State Management:** The `provider` package is used for state management, ensuring a clean and scalable architecture.
 
-### Версия 0.1
+## Project Structure
 
-- **Начальная структура проекта:** Создан базовый проект Flutter.
-- **Навигация:** Реализована основная навигация с помощью `BottomNavigationBar`.
-- **Экраны:** Созданы файлы-заглушки для `home_screen.dart`, `meditations_screen.dart`, `library_screen.dart`, `profile_screen.dart`.
-- **Тема:** Настроена базовая тема приложения (`ThemeData`) в минималистичном стиле.
+The project is organized into the following directories:
 
-### Версия 0.2
+*   `lib`
+    *   `main.dart`: The main entry point of the application.
+    *   `models`: Contains the data models for `Meditation` and `Music`.
+    *   `providers`: Includes the `MusicProvider` for managing the state of the music player.
+    *   `screens`: Contains the different screens of the app, such as `HomeScreen`, `MeditationsScreen`, `LibraryScreen`, and `ProfileScreen`.
+    *   `services`: Includes services for fetching meditation and music data.
+    *   `widgets`: Contains reusable widgets, such as the `MeditationStartSheet`.
+*   `assets`
+    *   `audio`: Contains the audio files for meditations and music.
 
-- **Управление состоянием:** Интегрирован пакет `flutter_hooks`.
-- **Архитектура:** Создан сервисный слой (`MeditationService`) и модель данных (`Meditation`) для управления данными.
-- **Экран "Медитации":** Экран преобразован в `HookWidget` для асинхронной загрузки и отображения списка медитаций с обработкой состояний загрузки и ошибок.
-
-### Версия 0.3
-
-- **Архитектура управления состоянием:**
-    - Добавлена зависимость `provider`.
-    - Создана модель `Music`, сервис `MusicService` и провайдер `MusicProvider` для управления выбором фоновой музыки.
-    - Приложение обернуто в `ChangeNotifierProvider` для глобального доступа к `MusicProvider`.
-- **Экран "Библиотека":**
-    - Реализован экран для выбора фоновой музыки из списка.
-    - Выбранная музыка сохраняется в `MusicProvider`.
-- **Рефакторинг `MeditationPlayerScreen`:**
-    - Удалена локальная логика выбора фоновой музыки.
-    - Экран теперь получает информацию о выбранном треке из `MusicProvider`.
-
-### Версия 0.4
-
-- **Улучшенный UX запуска медитации:**
-    - **Модальное окно:** При выборе медитации появляется модальное окно `MeditationStartSheet` для настройки длительности таймера.
-    - **Автоматический запуск:** Плеер `MeditationPlayerScreen` теперь принимает заданную длительность, автоматически запускает воспроизведение медитации и фоновой музыки при открытии.
-- **Обновленная библиотека музыки:**
-    - **Премиум-контент:** В модель `Music` добавлено поле `isPremium`.
-    - **UI Библиотеки:** Экран `LibraryScreen` теперь визуально разделяет доступные и "премиум" (заблокированные) треки. Пользователь не может выбрать премиум-треки, но видит их в списке.
-- **Рефакторинг:**
-    - **`MeditationsScreen`:** Логика нажатия изменена для вызова модального окна.
-    - **`MeditationPlayerScreen`:** Переработан для приема `duration` и автозапуска.
-
-### Версия 0.5 (Текущая)
-
-- **Исправление ошибки аудио на Android:**
-    - **Диагностика:** Выявлена ошибка `MediaPlayer` (`setDataSourceFD failed`), связанная с некорректной инициализацией Firebase.
-    - **Исправление путей:** Скорректированы пути к аудиофайлам в `MeditationService` и `MusicService`, добавлен префикс `assets/`.
-    - **Интеграция Firebase:**
-        - Добавлены зависимости `firebase_core` и `firebase_app_check`.
-        - В `lib/main.dart` добавлена асинхронная инициализация Firebase.
-        - Активирован `Firebase App Check` в режиме отладки для Android для обеспечения корректной работы в debug-сборках.
-
-## 3. План текущих изменений (Выполнено)
-
-**Задача:** Устранить критическую ошибку воспроизведения аудио на Android, приводившую к падению приложения.
-
-**Шаги:**
-
-1.  **Диагностика:** Выявлены ошибки `MediaPlayer` и `Firebase App Check`. (Выполнено)
-2.  **Добавление зависимостей:** В `pubspec.yaml` добавлены `firebase_core` и `firebase_app_check`. (Выполнено)
-3.  **Инициализация Firebase:** В `lib/main.dart` реализована правильная асинхронная инициализация Firebase и `App Check` для отладочного режима Android. (Выполнено)
-4.  **Исправление путей:** Скорректированы пути к аудиофайлам в `MeditationService` и `MusicService`. (Выполнено)
-5.  **Обновление `blueprint.md`:** Задокументированы все этапы исправления. (Выполнено)
