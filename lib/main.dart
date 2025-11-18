@@ -1,56 +1,80 @@
 
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+import 'providers/music_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/meditations_screen.dart';
 import 'screens/library_screen.dart';
 import 'screens/profile_screen.dart';
 
-// Точка входа в приложение
 void main() {
-  runApp(const MeditationHarmonyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => MusicProvider(),
+      child: const MeditationHarmonyApp(),
+    ),
+  );
 }
 
-/// Корневой виджет приложения "Meditation Harmony".
-///
-/// Он настраивает тему, маршрутизацию и основной макет приложения.
 class MeditationHarmonyApp extends StatelessWidget {
   const MeditationHarmonyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
+    const Color seedColor = Color(0xFFB9E4C9); // A gentle, light green
+
     return MaterialApp(
       title: 'Meditation Harmony',
-      // Определяем основную тему приложения в соответствии с ТЗ (минимализм, спокойные цвета)
       theme: ThemeData(
-        primarySwatch: Colors.teal, // Спокойный, зеленоватый цвет
-        scaffoldBackgroundColor: Colors.white,
-        // Настройка для нижней навигационной панели
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          selectedItemColor: Colors.teal, // Цвет активной иконки
-          unselectedItemColor: Colors.grey, // Цвет неактивных иконок
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: seedColor,
+          brightness: Brightness.light,
+          primary: seedColor,
+          onPrimary: Colors.black87,
+          secondary: const Color(0xFFD4F1DD),
+          onSecondary: Colors.black87,
+          surface: const Color(0xFFFAFFF8),
         ),
-        // Задаем основной шрифт, если потребуется
-        // fontFamily: 'Roboto',
+        scaffoldBackgroundColor: const Color(0xFFF5FBF7),
+        textTheme: GoogleFonts.montserratTextTheme(
+          Theme.of(context).textTheme,
+        ).apply(
+          bodyColor: Colors.black87,
+          displayColor: Colors.black87,
+        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+        ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          foregroundColor: Colors.black87,
+          titleTextStyle: GoogleFonts.montserrat(
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
       home: const MainScreen(),
-      debugShowCheckedModeBanner: false, // Убираем баннер "Debug"
+      debugShowCheckedModeBanner: false,
     );
   }
 }
 
-/// Главный экран приложения, содержащий нижнюю навигационную панель.
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
 
   @override
-  _MainScreenState createState() => _MainScreenState();
+  MainScreenState createState() => MainScreenState();
 }
 
-class _MainScreenState extends State<MainScreen> {
-  // Индекс текущего выбранного экрана
+class MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
-  // Список виджетов (экранов) для навигации
   static const List<Widget> _widgetOptions = <Widget>[
     HomeScreen(),
     MeditationsScreen(),
@@ -58,7 +82,6 @@ class _MainScreenState extends State<MainScreen> {
     ProfileScreen(),
   ];
 
-  // Метод для обработки нажатия на элемент навигационной панели
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -68,41 +91,76 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // AppBar может быть добавлен здесь, если он общий для всех экранов,
-      // или в каждом отдельном экране для кастомизации.
-      // appBar: AppBar(
-      //   title: const Text('Meditation Harmony'),
-      // ),
-      
-      // Тело Scaffold - отображает выбранный экран из списка _widgetOptions
-      body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex),
+      body: _widgetOptions.elementAt(_selectedIndex),
+      bottomNavigationBar: _buildFrostedNavBar(),
+    );
+  }
+
+  Widget _buildFrostedNavBar() {
+    return ClipRRect(
+      borderRadius: const BorderRadius.only(
+        topLeft: Radius.circular(25.0),
+        topRight: Radius.circular(25.0),
       ),
-      
-      // Нижняя навигационная панель в соответствии с ТЗ
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home), // Иконка для "Главная"
-            label: 'Главная',
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface.withAlpha(179),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(25.0),
+              topRight: Radius.circular(25.0),
+            ),
+            border: Border(
+              top: BorderSide(
+                color: Theme.of(context).colorScheme.primary.withAlpha(51),
+                width: 1.0,
+              ),
+            ),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.self_improvement), // Иконка для "Медитации"
-            label: 'Медитации',
+          child: BottomNavigationBar(
+            items: <BottomNavigationBarItem>[
+              _buildNavItem(Icons.home_rounded, 'Главная', 0),
+              _buildNavItem(Icons.self_improvement_rounded, 'Медитации', 1),
+              _buildNavItem(Icons.music_note_rounded, 'Библиотека', 2),
+              _buildNavItem(Icons.person_outline_rounded, 'Профиль', 3),
+            ],
+            currentIndex: _selectedIndex,
+            onTap: _onItemTapped,
+            type: BottomNavigationBarType.fixed,
+            showSelectedLabels: false,
+            showUnselectedLabels: false,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.music_note), // Иконка для "Библиотека"
-            label: 'Библиотека',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person), // Иконка для "Профиль"
-            label: 'Профиль',
-          ),
-        ],
-        currentIndex: _selectedIndex, // Текущий активный элемент
-        onTap: _onItemTapped,       // Обработчик нажатий
-        type: BottomNavigationBarType.fixed, // Фиксируем панель, чтобы все элементы были видны
+        ),
       ),
+    );
+  }
+
+  BottomNavigationBarItem _buildNavItem(IconData icon, String label, int index) {
+    final bool isSelected = _selectedIndex == index;
+    final color = isSelected ? Theme.of(context).colorScheme.primary : Colors.grey[400];
+
+    return BottomNavigationBarItem(
+      icon: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: isSelected
+            ? BoxDecoration(
+                color: Theme.of(context).colorScheme.primary.withAlpha(51),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Theme.of(context).colorScheme.primary.withAlpha(128),
+                    blurRadius: 10,
+                    spreadRadius: 1,
+                  ),
+                ],
+              )
+            : null,
+        child: Icon(icon, color: color),
+      ),
+      label: label,
     );
   }
 }
