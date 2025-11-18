@@ -3,13 +3,22 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'providers/music_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/meditations_screen.dart';
 import 'screens/library_screen.dart';
 import 'screens/profile_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  await FirebaseAppCheck.instance.activate(
+    // You can also use a `ReCaptchaEnterpriseProvider` provider based on your platform/needs
+    androidProvider: AndroidProvider.debug,
+  );
+
   runApp(
     ChangeNotifierProvider(
       create: (context) => MusicProvider(),
