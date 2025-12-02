@@ -3,16 +3,29 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_core/firebase_core.dart';
+// import 'package:firebase_core/firebase_core.dart';
+// import 'package:firebase_app_check/firebase_app_check.dart';
+// import 'firebase_options.dart';
 import 'providers/music_provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/meditations_screen.dart';
 import 'screens/library_screen.dart';
 import 'screens/profile_screen.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  // await Firebase.initializeApp(
+  //   options: DefaultFirebaseOptions.currentPlatform,
+  // );
+
+  // // Activate App Check
+  // await FirebaseAppCheck.instance.activate(
+  //   // You can get your reCAPTCHA v3 site key from the Firebase console.
+  //   webRecaptchaSiteKey: 'recaptcha-v3-site-key', // Replace with your key
+  //   // Set androidProvider to `AndroidProvider.debug` to use the debug token
+  //   // on Android debug builds.
+  //   androidProvider: AndroidProvider.debug,
+  // );
 
   runApp(
     ChangeNotifierProvider(
