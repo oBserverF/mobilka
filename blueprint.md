@@ -1,29 +1,40 @@
-# Meditation Harmony
+# Обзор проекта
 
-## Overview
+Это приложение для медитации, которое помогает пользователям расслабиться и сосредоточиться. Приложение предлагает различные медитации с возможностью выбора фоновой музыки и длительности. Оно также включает в себя советы по медитации, ответы на часто задаваемые вопросы и чат с ассистентом (по подписке).
 
-Meditation Harmony is a Flutter application designed to provide a serene and calming experience for users through guided meditations and relaxing music. The app features a simple and intuitive interface, with a focus on beautiful design and ease of use.
+# Реализованные функции
 
-## Features
+* **Главный экран:**
+    * Приветствие пользователя.
+    * Карточка для быстрого начала 10-минутной утренней медитации.
+    * Секция с советами по медитации.
+    * Секция с часто задаваемыми вопросами.
+    * Карточка для доступа к чату с ассистентом (требуется подписка).
+    * Секция с рекомендуемыми медитациями (Релаксация, Фокус, Сон).
+* **Экран медитаций:**
+    * Список доступных медитаций с фоновыми изображениями.
+    * При выборе медитации открывается нижний лист с настройками.
+* **Настройки медитации:**
+    * Выбор длительности медитации (5, 10, 15, 20, 30 минут).
+    * Выбор фоновой музыки (Лес, Океан, Дождь) или без музыки.
+* **Экран плеера медитации:**
+    * Фоновое слайд-шоу с красивыми пейзажами.
+    * Таймер обратного отсчета.
+    * Кнопки управления (пауза/воспроизведение).
+    * Регулятор громкости для фоновой музыки.
+* **Навигация:**
+    * Нижняя навигационная панель с вкладками: Главная, Медитации, Библиотека, Профиль.
 
-*   **Guided Meditations:** A collection of guided meditations for various purposes, such as breathing practices, evening relaxation, and morning focus.
-*   **Music Library:** A library of calming music tracks, including sounds of nature like forests, oceans, and rain.
-*   **Meditation Player:** A dedicated screen for playing meditations and music, with controls for play, pause, and seeking.
-*   **Frosted Glass UI:** A beautiful frosted glass effect for the bottom navigation bar, creating a modern and visually appealing look.
-*   **Custom Theming:** A custom color scheme and typography using Google Fonts to create a consistent and harmonious design.
-*   **Provider State Management:** The `provider` package is used for state management, ensuring a clean and scalable architecture.
+# План текущих изменений
 
-## Project Structure
+Я только что завершил реализацию новой функции медитации. Вот что было сделано:
 
-The project is organized into the following directories:
+1.  **Создан новый экран чата:** `lib/screens/chat_screen.dart` был создан для отображения экрана чата, доступного по подписке.
+2.  **Обновлен главный экран:** `lib/screens/home_screen.dart` был обновлен, чтобы включить новые разделы: "Советы по медитации", "Помощь и ответы на вопросы" и карточку чата.
+3.  **Добавлен выбор музыки и длительности:** `lib/widgets/meditation_start_sheet.dart` был обновлен, чтобы позволить пользователям выбирать музыку и продолжительность медитации.
+4.  **Создан экран плеера медитации:** `lib/screens/meditation_player_screen.dart` был создан для отображения таймера, фонового слайд-шоу и элементов управления медитацией.
+5.  **Обновлен провайдер музыки:** `lib/providers/music_provider.dart` был обновлен для управления воспроизведением, паузой, возобновлением, остановкой и громкостью фоновой музыки с использованием пакета `audioplayers`.
+6.  **Добавлены аудиофайлы:** В `assets/audio/` были добавлены файлы `forest.mp3`, `ocean.mp3` и `rain.mp3`.
+7.  **Обновлен `pubspec.yaml`:** `pubspec.yaml` был обновлен, чтобы включить аудио активы.
 
-*   `lib`
-    *   `main.dart`: The main entry point of the application.
-    *   `models`: Contains the data models for `Meditation` and `Music`.
-    *   `providers`: Includes the `MusicProvider` for managing the state of the music player.
-    *   `screens`: Contains the different screens of the app, such as `HomeScreen`, `MeditationsScreen`, `LibraryScreen`, and `ProfileScreen`.
-    *   `services`: Includes services for fetching meditation and music data.
-    *   `widgets`: Contains reusable widgets, such as the `MeditationStartSheet`.
-*   `assets`
-    *   `audio`: Contains the audio files for meditations and music.
 

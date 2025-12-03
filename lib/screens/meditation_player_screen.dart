@@ -2,208 +2,157 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:audioplayers/audioplayers.dart';
-import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../models/meditation.dart';
 import '../providers/music_provider.dart';
 
 class MeditationPlayerScreen extends HookWidget {
   final Meditation meditation;
   final Duration duration;
+  final String? musicTitle;
 
-  const MeditationPlayerScreen({super.key, required this.meditation, required this.duration});
+  const MeditationPlayerScreen({super.key, required this.meditation, required this.duration, this.musicTitle});
 
   @override
   Widget build(BuildContext context) {
-    final audioPlayer = useMemoized(() => AudioPlayer(), []);
-    final backgroundPlayer = useMemoized(() => AudioPlayer(), []);
-    final isPlaying = useState(false);
-    final remainingTime = useState(duration);
-    final timer = useRef<Timer?>(null);
-    final theme = Theme.of(context);
-
     final musicProvider = Provider.of<MusicProvider>(context, listen: false);
-    final selectedMusic = musicProvider.selectedMusic;
+    final remainingTime = useState(duration);
+    final isPlaying = useState(true);
+    final timer = useRef<Timer?>(null);
+    final pageController = usePageController();
+    final images = [
+      'https://images.unsplash.com/photo-1518837695005-2083093ee35b?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+      'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+      'https://images.unsplash.com/photo-1475113548554-5a36f1f523d6?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+      'https://images.unsplash.com/photo-1433838552652-f9a46b332c40?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    ];
 
     void startTimer() {
-      timer.value?.cancel(); // Cancel any existing timer
-      timer.value = Timer.periodic(const Duration(seconds: 1), (t) {
-        if (remainingTime.value.inSeconds <= 0) {
-          t.cancel();
-          audioPlayer.stop();
-          backgroundPlayer.stop();
-          if (context.mounted) Navigator.pop(context);
-        } else {
+      timer.value = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (remainingTime.value.inSeconds > 0) {
           remainingTime.value = remainingTime.value - const Duration(seconds: 1);
+        } else {
+          timer.cancel();
+          isPlaying.value = false;
         }
       });
     }
 
-    void playAudio() {
-      audioPlayer.play(AssetSource(meditation.audioUrl));
-      if (selectedMusic != null) {
-        backgroundPlayer.play(AssetSource(selectedMusic.audioUrl));
-        backgroundPlayer.setVolume(0.3);
-      }
-      isPlaying.value = true;
-      startTimer();
-    }
-
-    void pauseAudio() {
-      timer.value?.cancel();
-      audioPlayer.pause();
-      backgroundPlayer.pause();
-      isPlaying.value = false;
-    }
-
-    void resumeAudio() {
-      audioPlayer.resume();
-      if (selectedMusic != null) backgroundPlayer.resume();
-      isPlaying.value = true;
-      startTimer();
-    }
-
     useEffect(() {
-      playAudio();
+      if (musicTitle != null) {
+        musicProvider.play(musicTitle!);
+      }
+      startTimer();
+
+      final slideshowTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+        if (pageController.hasClients) {
+            if (pageController.page == images.length - 1) {
+                pageController.animateToPage(0, duration: const Duration(milliseconds: 500), curve: Curves.easeIn);
+            } else {
+                pageController.nextPage(duration: const Duration(milliseconds: 500), curve: Curves.easeIn);
+            }
+        }
+      });
+
       return () {
         timer.value?.cancel();
-        audioPlayer.dispose();
-        backgroundPlayer.dispose();
+        slideshowTimer.cancel();
+        musicProvider.stop();
       };
     }, []);
 
-    String formatDuration(Duration d) {
-      final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-      final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-      return '$minutes:$seconds';
-    }
-
     return Scaffold(
-      backgroundColor: Colors.black,
       body: Stack(
         children: [
-          _buildAnimatedBackground(theme),
-          _buildGradientOverlay(),
-          _buildContent(context, theme, formatDuration, remainingTime, isPlaying, pauseAudio, resumeAudio),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAnimatedBackground(ThemeData theme) {
-    return AnimatedContainer(
-      duration: const Duration(seconds: 5),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            theme.colorScheme.primary.withAlpha(128),
-            theme.colorScheme.secondary.withAlpha(128),
-            Colors.black,
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGradientOverlay() {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: RadialGradient(
-          center: Alignment.center,
-          radius: 1.0,
-          colors: [Colors.white.withAlpha(26), Colors.black.withAlpha(204)],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildContent(BuildContext context, ThemeData theme, String Function(Duration) formatDuration, ValueNotifier<Duration> remainingTime, ValueNotifier<bool> isPlaying, VoidCallback pause, VoidCallback resume) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            _buildHeader(context, theme),
-            _buildTimerDisplay(theme, formatDuration, remainingTime),
-            _buildControls(theme, isPlaying, pause, resume),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context, ThemeData theme) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(meditation.title, style: GoogleFonts.montserrat(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-            Text(meditation.description, style: GoogleFonts.montserrat(color: Colors.white70, fontSize: 16)),
-          ],
-        ),
-        IconButton(onPressed: () => Navigator.pop(context), icon: const Icon(Icons.close, color: Colors.white, size: 30)),
-      ],
-    );
-  }
-
-  Widget _buildTimerDisplay(ThemeData theme, String Function(Duration) formatDuration, ValueNotifier<Duration> remainingTime) {
-    final totalSeconds = duration.inSeconds;
-    final remainingSeconds = remainingTime.value.inSeconds;
-    final progress = totalSeconds > 0 ? (totalSeconds - remainingSeconds) / totalSeconds : 0.0;
-
-    return SizedBox(
-      width: 280,
-      height: 280,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          SizedBox(
-            width: 280,
-            height: 280,
-            child: CircularProgressIndicator(
-              value: progress,
-              strokeWidth: 8,
-              backgroundColor: Colors.white.withAlpha(26),
-              valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
-            ),
+          PageView.builder(
+            controller: pageController,
+            itemCount: images.length,
+            itemBuilder: (context, index) {
+              return Image.network(
+                images[index],
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+              );
+            },
           ),
-          Text(
-            formatDuration(remainingTime.value),
-            style: GoogleFonts.montserrat(color: Colors.white, fontSize: 60, fontWeight: FontWeight.w200),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildControls(ThemeData theme, ValueNotifier<bool> isPlaying, VoidCallback pause, VoidCallback resume) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        GestureDetector(
-          onTap: isPlaying.value ? pause : resume,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            padding: const EdgeInsets.all(24),
+          Container(
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withAlpha(51),
-              border: Border.all(color: Colors.white.withAlpha(77), width: 2),
-            ),
-            child: Icon(
-              isPlaying.value ? Icons.pause_rounded : Icons.play_arrow_rounded,
-              color: Colors.white,
-              size: 60,
+              color: Colors.black.withAlpha(128),
             ),
           ),
-        ),
-      ],
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(meditation.title, style: GoogleFonts.montserrat(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      Text(
+                        '${(remainingTime.value.inMinutes).toString().padLeft(2, '0')}:${(remainingTime.value.inSeconds % 60).toString().padLeft(2, '0')}',
+                        style: GoogleFonts.montserrat(color: Colors.white, fontSize: 72, fontWeight: FontWeight.w100),
+                      ),
+                      const SizedBox(height: 40),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            icon: Icon(isPlaying.value ? Icons.pause_circle_filled_rounded : Icons.play_circle_filled_rounded, color: Colors.white, size: 80),
+                            onPressed: () {
+                              if (isPlaying.value) {
+                                timer.value?.cancel();
+                                musicProvider.pause();
+                              } else {
+                                startTimer();
+                                if (musicTitle != null) {
+                                  musicProvider.play(musicTitle!);
+                                }
+                              }
+                              isPlaying.value = !isPlaying.value;
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  if (musicTitle != null)
+                    Consumer<MusicProvider>(
+                      builder: (context, provider, child) {
+                        return Row(
+                          children: [
+                            const Icon(Icons.volume_up_rounded, color: Colors.white),
+                            Expanded(
+                              child: Slider(
+                                value: provider.volume,
+                                onChanged: (value) => provider.setVolume(value),
+                                activeColor: Colors.white,
+                                inactiveColor: Colors.white.withAlpha(128),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    )
+                  else
+                    const SizedBox(),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

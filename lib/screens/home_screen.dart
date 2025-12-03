@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:myapp/screens/chat_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -20,6 +21,16 @@ class HomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildQuickStartCard(context, theme),
+              const SizedBox(height: 30),
+              Text('Советы по медитации', style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
+              const SizedBox(height: 15),
+              _buildMeditationTipsSection(theme),
+              const SizedBox(height: 30),
+              Text('Помощь и ответы', style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
+              const SizedBox(height: 15),
+              _buildFaqSection(theme),
+              const SizedBox(height: 30),
+              _buildChatCard(context, theme),
               const SizedBox(height: 30),
               Text('Рекомендуемые', style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
               const SizedBox(height: 15),
@@ -83,6 +94,104 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildMeditationTipsSection(ThemeData theme) {
+    return SizedBox(
+      height: 120,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        children: [
+          _buildTipCard(theme, 'Найдите тихое место', Icons.airline_seat_legroom_reduced_rounded),
+          const SizedBox(width: 15),
+          _buildTipCard(theme, 'Следите за дыханием', Icons.air_rounded),
+          const SizedBox(width: 15),
+          _buildTipCard(theme, 'Будьте последовательны', Icons.all_inclusive_rounded),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTipCard(ThemeData theme, String title, IconData icon) {
+    return Container(
+      width: 140,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: theme.colorScheme.primary, size: 30),
+          const Spacer(),
+          Text(
+            title,
+            style: GoogleFonts.montserrat(
+              color: theme.colorScheme.onSurface,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+    Widget _buildFaqSection(ThemeData theme) {
+    return Column(
+      children: [
+        _buildFaqCard(theme, 'Как начать медитировать?', 'Начните с 5-10 минут в день, сидя в удобной позе и фокусируясь на дыхании.'),
+        const SizedBox(height: 10),
+        _buildFaqCard(theme, 'О чем думать во время медитации?', 'Старайтесь не думать ни о чем, просто наблюдайте за своими мыслями, не вовлекаясь в них.'),
+      ],
+    );
+  }
+
+  Widget _buildFaqCard(ThemeData theme, String question, String answer) {
+    return Card(
+      elevation: 2,
+      shadowColor: theme.colorScheme.primary.withAlpha(50),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: ExpansionTile(
+        title: Text(question, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(answer, style: theme.textTheme.bodyMedium),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChatCard(BuildContext context, ThemeData theme) {
+    return GestureDetector(
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ChatScreen())),
+      child: Card(
+        elevation: 2,
+        shadowColor: theme.colorScheme.primary.withAlpha(50),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Icon(Icons.chat_bubble_outline_rounded, color: theme.colorScheme.primary, size: 30),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  'Чат с ассистентом',
+                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                ),
+              ),
+              Icon(Icons.lock_rounded, color: Colors.grey[400]),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+
 
   Widget _buildFeaturedSection(ThemeData theme) {
     return SizedBox(

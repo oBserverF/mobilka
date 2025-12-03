@@ -3,7 +3,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../models/meditation.dart';
+import '../providers/music_provider.dart';
 import '../screens/meditation_player_screen.dart';
 
 class MeditationStartSheet extends HookWidget {
@@ -16,6 +18,9 @@ class MeditationStartSheet extends HookWidget {
     final selectedDuration = useState(const Duration(minutes: 10));
     final durations = [5, 10, 15, 20, 30].map((m) => Duration(minutes: m)).toList();
     final theme = Theme.of(context);
+    final musicProvider = Provider.of<MusicProvider>(context);
+    final selectedMusic = useState<String?>(musicProvider.musicTracks.first.title);
+
 
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
@@ -87,8 +92,66 @@ class MeditationStartSheet extends HookWidget {
                 },
               ),
             ),
+            const SizedBox(height: 24),
+            Text('Музыка', style: theme.textTheme.titleMedium),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 40,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: musicProvider.musicTracks.length + 1,
+                separatorBuilder: (context, index) => const SizedBox(width: 12),
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                     final isSelected = selectedMusic.value == null;
+                     return ChoiceChip(
+                        label: const Text('Без музыки'),
+                        selected: isSelected,
+                        onSelected: (selected) {
+                        if (selected) {
+                            selectedMusic.value = null;
+                        }
+                        },
+                        backgroundColor: theme.colorScheme.secondary.withAlpha(128),
+                        selectedColor: theme.colorScheme.primary,
+                        labelStyle: TextStyle(
+                        color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSecondary,
+                        fontWeight: FontWeight.bold,
+                        ),
+                        shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        side: BorderSide.none,
+                        ),
+                        elevation: isSelected ? 3 : 0,
+                    );
+                  }
+                  final music = musicProvider.musicTracks[index - 1];
+                  final isSelected = music.title == selectedMusic.value;
+                  return ChoiceChip(
+                    label: Text(music.title),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      if (selected) {
+                        selectedMusic.value = music.title;
+                      }
+                    },
+                    backgroundColor: theme.colorScheme.secondary.withAlpha(128),
+                    selectedColor: theme.colorScheme.primary,
+                    labelStyle: TextStyle(
+                      color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSecondary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      side: BorderSide.none,
+                    ),
+                    elevation: isSelected ? 3 : 0,
+                  );
+                },
+              ),
+            ),
             const SizedBox(height: 32),
-            _buildStartButton(context, theme, selectedDuration.value),
+            _buildStartButton(context, theme, selectedDuration.value, selectedMusic.value),
             const SizedBox(height: 16),
           ],
         ),
@@ -96,14 +159,18 @@ class MeditationStartSheet extends HookWidget {
     );
   }
 
-  Widget _buildStartButton(BuildContext context, ThemeData theme, Duration duration) {
+  Widget _buildStartButton(BuildContext context, ThemeData theme, Duration duration, String? musicTitle) {
     return GestureDetector(
       onTap: () {
         Navigator.pop(context); // Close sheet
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => MeditationPlayerScreen(meditation: meditation, duration: duration),
+            builder: (context) => MeditationPlayerScreen(
+              meditation: meditation, 
+              duration: duration, 
+              musicTitle: musicTitle,
+            ),
             fullscreenDialog: true,
           ),
         );

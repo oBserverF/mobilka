@@ -1,10 +1,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../services/music_service.dart';
-import '../providers/music_provider.dart';
 import '../models/music.dart';
 
 class LibraryScreen extends HookWidget {
@@ -55,15 +53,11 @@ class LibraryScreen extends HookWidget {
   }
 
   Widget _buildMusicCard(BuildContext context, Music music) {
-    final musicProvider = Provider.of<MusicProvider>(context);
-    final isSelected = musicProvider.selectedMusic?.id == music.id;
     final theme = Theme.of(context);
 
     return GestureDetector(
       onTap: () {
-        if (!music.isPremium) {
-          musicProvider.selectMusic(music);
-        } else {
+        if (music.isPremium) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Эта музыка будет доступна в будущем!', style: GoogleFonts.montserrat(color: Colors.white)),
@@ -83,15 +77,6 @@ class LibraryScreen extends HookWidget {
             fit: BoxFit.cover,
             colorFilter: music.isPremium ? ColorFilter.mode(Colors.black.withAlpha(128), BlendMode.darken) : null,
           ),
-          border: isSelected ? Border.all(color: theme.colorScheme.primary, width: 3) : null,
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: theme.colorScheme.primary.withAlpha(128),
-                    blurRadius: 10,
-                  )
-                ]
-              : null,
         ),
         child: Stack(
           children: [
@@ -108,10 +93,6 @@ class LibraryScreen extends HookWidget {
             if (music.isPremium)
               const Center(
                 child: Icon(Icons.lock_rounded, color: Colors.white, size: 40),
-              ),
-            if (isSelected)
-              const Center(
-                child: Icon(Icons.check_circle_rounded, color: Colors.white, size: 50),
               ),
             Positioned(
               bottom: 16,
